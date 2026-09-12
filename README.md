@@ -4,6 +4,8 @@
 > 1. Fullstack Localhost Web App (Frontend + Backend ek saath on `http://localhost:3000`).
 > 2. Capacitor Android App wrapping `localhost:3000` via WebView.
 > 3. Native Firebase Cloud Messaging (FCM) push notification layer with WhatsApp-style heads-up alerts.
+>
+> 🌐 **GitHub Repository:** [https://github.com/SakshamChawla76/fcm-webview-push-app](https://github.com/SakshamChawla76/fcm-webview-push-app)
 
 ---
 
