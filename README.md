@@ -1,26 +1,17 @@
-# 🚀 PushHub FCM: Fullstack WebView App with Firebase Cloud Messaging (FCM)
+# PushHub FCM: Fullstack WebView App with Firebase Cloud Messaging (FCM)
 
-> **Created specifically for Aakash Bhaiya's exact architectural flow:**
-> 1. Fullstack Localhost Web App (Frontend + Backend ek saath on `http://localhost:3000`).
-> 2. Capacitor Android App wrapping `localhost:3000` via WebView.
-> 3. Native Firebase Cloud Messaging (FCM) push notification layer with WhatsApp-style heads-up alerts.
->
-> 🌐 **GitHub Repository:** [https://github.com/SakshamChawla76/fcm-webview-push-app](https://github.com/SakshamChawla76/fcm-webview-push-app)
+A production-ready fullstack implementation demonstrating how to bridge an Express backend with an Android Capacitor WebView app to deliver high-priority Firebase Cloud Messaging (FCM) push notifications with WhatsApp-style heads-up alerts.
 
 ---
 
-## 🌟 Pre-Configured Firebase Project Details
+## 🌟 Key Features
 
-A brand new dedicated Google Firebase project has already been provisioned for this workspace:
-
-| Parameter | Value |
-| :--- | :--- |
-| **Firebase Project ID** | `pushhub-fcm-8586` |
-| **Project Name** | PushHub FCM |
-| **Android App Package Name** | `com.pushapp.fcmwebview` |
-| **Firebase App ID** | `1:524560368513:android:5758176858561ad89cde80` |
-| **Firebase Console URL** | [https://console.firebase.google.com/project/pushhub-fcm-8586/overview](https://console.firebase.google.com/project/pushhub-fcm-8586/overview) |
-| **Google Services Config** | Already saved in `android/app/google-services.json` ✅ |
+- **Fullstack Localhost Architecture**: Express server hosting the API, device registry, and live glassmorphic web dashboard simultaneously on port `3000`.
+- **Capacitor Mobile Layer**: Native Android WebView container powered by `@capacitor/core` and `@capacitor/push-notifications`.
+- **Google FCM v1 Integration**: Dispatches genuine high-priority push notifications using `firebase-admin`.
+- **Heads-Up Banner Support**: Configured with Android `IMPORTANCE_HIGH` (Notification Channel Level 5) to display floating alert banners with sound and vibration.
+- **Real-Time Live Feed**: Server-Sent Events (SSE) stream delivering instant delivery status updates and registration logs to the console.
+- **Multi-Environment Ready**: Operates on Android Emulators (`10.0.2.2`), Local Wi-Fi (`192.168.x.x`), and Standalone APK offline modes.
 
 ---
 
@@ -28,191 +19,185 @@ A brand new dedicated Google Firebase project has already been provisioned for t
 
 ```
 +──────────────────────────────────────────────────────────────────────────+
-|                    PC / LOCAL MACHINE (EXPRESS SERVER)                   |
+|                    HOST MACHINE (EXPRESS SERVER)                         |
 |                                                                          |
 |  http://localhost:3000 (binds to 0.0.0.0:3000)                           |
-|   ├── Static Glassmorphic UI Dashboard (Device Token Manager & Push Hub) |
-|   ├── Device Token Registry API (POST /api/devices/register)             |
-|   └── Firebase Admin Dispatcher (POST /api/send-push)                    |
+|   ├── Glassmorphic Web Dashboard (Device Token Registry & Dispatch Hub)  |
+|   ├── Device Token Registration API (POST /api/devices/register)         |
+|   ├── Push Dispatcher API (POST /api/send-push)                          |
+|   └── Real-time SSE Stream (GET /api/events)                             |
 |                         │                                                |
 |                         ▼ Calls Google FCM v1 API                        |
 |        [ Google Firebase Cloud Messaging Servers ]                       |
 +─────────────────────────┼────────────────────────────────────────────────+
-                          │ (Delivered over Internet)
+                          │ Delivered over Internet (Cellular / Wi-Fi)
                           ▼
 +──────────────────────────────────────────────────────────────────────────+
 |                    CAPACITOR ANDROID RUNTIME                             |
 |                                                                          |
 |  Android Native WebView:                                                 |
-|   ├── Points to: http://10.0.2.2:3000 (Emulator) OR Wi-Fi IP (Phone)     |
+|   ├── Bundled Web Assets (Standalone APK) or Remote Host URL             |
 |   ├── Plugin: @capacitor/push-notifications                             |
-|   ├── Android High-Priority Channel: fcm_default_channel (Sound + Pop)   |
+|   ├── Notification Channel: fcm_default_channel (High Priority)          |
 |   ├── Registers with Google Play Services on boot                        |
-|   ├── Posts FCM Device Token to Backend                                  |
-|   └── Receives WhatsApp-style Heads-Up Banner notification               |
+|   ├── Generates Real 160-character FCM Device Token                      |
+|   └── Receives System Tray & Heads-Up Banner Notifications               |
 +──────────────────────────────────────────────────────────────────────────+
 ```
 
 ---
 
-## 📋 Quick Setup in 3 Minutes
+## 📋 Prerequisites
 
-### Step 1: Start the Fullstack Server
-Terminal me command run karein:
-```powershell
-cd c:\Users\HP\app\fcm-webview-app
+- **Node.js**: v18 or later
+- **Java Development Kit (JDK)**: JDK 17 or JDK 21
+- **Android Studio / Android SDK**: For native compilation (optional if using pre-built APK)
+- **Firebase Account**: A standard Firebase project with Cloud Messaging enabled
+
+---
+
+## 🚀 Quick Start Guide
+
+### 1. Clone & Install Dependencies
+```bash
+git clone https://github.com/SakshamChawla76/fcm-webview-push-app.git
+cd fcm-webview-push-app
 npm install
+```
+
+### 2. Configure Firebase Credentials
+1. In your Firebase Console, navigate to **Project Settings > Service Accounts**.
+2. Click **Generate new private key** to download your service account JSON file.
+3. Place the file in the project root directory and name it:
+   ```
+   firebase-service-account.json
+   ```
+4. In **Project Settings > General**, add an Android app with package name `com.pushapp.fcmwebview`, download `google-services.json`, and place it in:
+   ```
+   android/app/google-services.json
+   ```
+
+*(Note: The server includes a fallback simulation mode for local development if credentials are not yet present).*
+
+### 3. Start the Backend Server
+```bash
 npm start
 ```
-Server live ho jayega:
-- **Browser Dashboard:** [http://localhost:3000](http://localhost:3000)
+The server will be available at:
+- **Local Dashboard:** `http://localhost:3000`
 - **Android Emulator Address:** `http://10.0.2.2:3000`
-- **Real Phone Wi-Fi Address:** `http://192.168.1.77:3000` *(Aapke network ka local IP terminal par display hoga)*
+- **LAN Physical Device Address:** `http://<YOUR_LOCAL_IP>:3000`
 
 ---
 
-### Step 2: Download Firebase Admin Private Key (1-Click)
-Real Android phone par Google servers se push bhejne ke liye Firebase Admin key chahiye:
-1. Is direct link par click karein:
-   👉 **[Download PushHub Service Account Key](https://console.firebase.google.com/project/pushhub-fcm-8586/settings/serviceaccounts/adminsdk)**
-2. **"Generate new private key"** button dabayein aur **"Generate key"** confirm karein.
-3. Downloaded file ka naam rename karke `firebase-service-account.json` rakhein aur yahan save kar dein:
-   ```
-   c:\Users\HP\app\fcm-webview-app\firebase-service-account.json
-   ```
-4. Server ko restart karein (`npm start`). Console me print hoga:
-   ```
-   ✅ Firebase Admin SDK successfully initialized with service account.
-   ```
-*(Note: Agar key nahi bhi lagayenge, tab bhi server automatically simulation mode me test push deliver karega!)*
+## 📱 Physical Android Device Testing Guide
 
----
+Follow these steps to test push notifications on a physical Android smartphone:
 
-### Step 3: Open in Android Studio & Run
+### Step 1: Install the Android APK
+Download and install the APK on your Android device:
+- **Latest Release**: Download from the [GitHub Releases](https://github.com/SakshamChawla76/fcm-webview-push-app/releases) tab.
 
-```powershell
-cd c:\Users\HP\app\fcm-webview-app
-npx cap open android
-```
-Android Studio open hone ke baad:
-1. Upper right corner me **Run (Green Play Button ▶️)** dabayein.
-2. Select karein apna **Android Emulator** ya **USB Connected Physical Phone**.
-3. App boot hote hi:
-   - Screen par `http://10.0.2.2:3000` load hoga.
-   - Android 13+ permission pop-up aayega: **"Allow PushHub FCM to send notifications?"** -> Click **Allow**.
-   - App automatic Google Play Services se real FCM token generate karke backend par register kar degi!
+### Step 2: Grant Permissions & Obtain Real FCM Token
+1. Launch **PushHub FCM** on your Android device.
+2. Confirm the top status badge displays **`Capacitor Android Native`**.
+3. When prompted by Android (*"Allow FCM WebView Push to send notifications?"*), tap **Allow**.
+   - If not automatically prompted, tap the purple **"Request Permission"** button.
+4. Google Play Services will return a genuine **FCM Registration Token** (~160 characters long).
+5. Tap **"Copy"** next to the token field.
 
----
+> [!NOTE]
+> **Real Device Token vs. Simulated Token:**
+> - A **Real FCM Device Token** is a long cryptographic string issued by Google Play Services.
+> - A **Simulated Token** (prefixed with `fcm_test_`) is only generated when clicking "Generate Test Token" for local browser mocking. Real push notifications require a genuine device token.
 
-## 🧪 How to Test Push Notifications
+### Step 3: Dispatch Notification to the Device
 
-### Method 1: Web Dashboard (UI Visual Test)
-1. Apne browser me [http://localhost:3000](http://localhost:3000) open karein.
-2. **"Active Devices"** table me aapka Android phone display ho jayega.
-3. Target device select karein.
-4. Quick preset click karein (e.g. `WhatsApp Chat`).
-5. **"Dispatch Push via Backend"** button dabayein!
-6. **Result:**
-   - Agar phone foreground me hai: App ke top se **WhatsApp-style heads-up banner** slide down hoga.
-   - Agar phone locked ya background me hai: System tray me sound aur notification pop hoga!
+#### Method A: Web Console (Recommended)
+1. Open `http://localhost:3000` on your computer.
+2. Paste the copied device token into the **"Or Custom Token"** field.
+3. Select a preset message or enter your custom title and body.
+4. Click **"Dispatch Push via Backend"**.
 
-### Method 2: Terminal / CLI Test Script
-Ek simple command se notification fire karein:
-```powershell
-cd c:\Users\HP\app\fcm-webview-app
-npm run test:push
-```
-Ya custom message ke sath:
-```powershell
-node send-notification-cli.js --title "💬 Aakash Bhaiya" --body "Bhai push test 100% working!"
+#### Method B: Terminal CLI
+Execute the provided CLI script from your terminal:
+```bash
+node send-notification-cli.js --token "<PASTE_DEVICE_TOKEN>" --title "Priority Alert" --body "Real push notification received in status bar!"
 ```
 
-### Method 3: REST API (cURL / Postman)
+#### Method C: REST API (cURL)
 ```bash
 curl -X POST http://localhost:3000/api/send-push \
   -H "Content-Type: application/json" \
   -d '{
-    "token": "<YOUR_DEVICE_FCM_TOKEN>",
-    "title": "💬 Aakash Bhaiya",
-    "body": "Hello from backend API!",
+    "token": "<PASTE_DEVICE_TOKEN>",
+    "title": "Delivery Update",
+    "body": "Your package is arriving shortly.",
     "priority": "high"
   }'
 ```
 
+### Step 4: Verify Delivery
+1. **Minimize the app** on your phone (return to the Home screen or lock the screen).
+2. Within seconds, your device will sound, vibrate, and display the **heads-up banner in the Android notification drawer**.
+
 ---
 
-## 📱 Physical Android Device (Real Phone) Testing Guide
+## 🛠️ Building the APK from Source
 
-Follow these exact steps to see real notifications appear in your phone's **Android Notification Bar / Status Bar**:
+To compile a new debug APK using Gradle:
 
-### Step 1: Install the Latest APK
-Download and install the APK on your Android phone:
-👉 **[Download PushHub-FCM-v1.2.apk](https://github.com/SakshamChawla76/fcm-webview-push-app/releases/download/v1.2.0/PushHub-FCM-v1.2.apk)** *(Direct 1-Tap Download)*
-
-### Step 2: Grant Notification Permission & Get Real FCM Token
-1. Open **PushHub FCM** on your phone.
-2. The top badge will display **`Capacitor Android Native`** (green).
-3. Android 13+ will prompt: *"Allow FCM WebView Push to send notifications?"* -> Tap **Allow** (or tap the purple **"Request Permission"** button).
-4. Google Play Services will automatically generate your **real FCM Registration Token** in the token field (a ~160-character string like `cQ5J8zL8Rv2Y...`).
-5. Tap **"Copy"** next to the token box.
-
-> [!CAUTION]
-> **Real Token vs. Test Token:**
-> - A **Real Device FCM Token** is ~160 characters long and generated by Google Play Services.
-> - A **Simulated Token** starts with `fcm_test_` (from the "Generate Test Token" button) and is **only for offline browser mock testing**. Do not use `fcm_test_...` to trigger real phone notifications, as Google FCM requires a genuine token.
-
-### Step 3: Dispatch Real Push to Your Phone
-Because your phone and laptop may be on different networks (e.g. mobile data while traveling), dispatch the notification from the backend where Firebase Admin credentials reside:
-
-#### Option A: Via Web Dashboard (Easiest)
-1. Open **`http://localhost:3000`** in your laptop's browser.
-2. Paste the real token copied from your phone into the **"Or Custom Token"** field.
-3. Select a preset (e.g. **WhatsApp Chat**) or type a title & body.
-4. Click **"Dispatch Push via Backend"**.
-
-#### Option B: Via Terminal CLI
-Run this command on your laptop, replacing `<PASTE_REAL_TOKEN>` with your copied token:
 ```powershell
-node send-notification-cli.js --token "<PASTE_REAL_TOKEN>" --title "💬 Aakash Bhaiya" --body "Notification bar test successful! 🚀"
-```
+# 1. Sync web assets with Capacitor Android
+npx cap sync
 
-### Step 4: Verify in Android Notification Bar
-1. **Minimize the app** on your phone (press Home button or lock your screen).
-2. Within 1-2 seconds, your phone will vibrate, play the notification tone, and show the **WhatsApp-style heads-up banner** at the top of your screen and in the **Android System Notification Drawer**!
+# 2. Build the Android debug APK
+cd android
+.\gradlew.bat assembleDebug
+```
+The compiled APK will be located at:
+`android/app/build/outputs/apk/debug/app-debug.apk`
 
 ---
 
-## ❓ Troubleshooting: Why did `http://localhost:3000` fail from the phone?
-- **`localhost` is local to the device running it**: When entered on your phone, `http://localhost:3000` tells the phone to connect to *itself*, not your laptop.
-- When both devices are on the same Wi-Fi router, you can use your laptop's local IP (e.g. `http://192.168.1.77:3000`).
-- When traveling or on mobile data, the phone communicates directly with Google's Cloud Messaging servers to receive notifications pushed by your backend.
+## ❓ Troubleshooting & FAQs
 
-## 🛠️ File Structure Reference
+### Why does setting `http://localhost:3000` on the mobile device fail?
+- `localhost` always resolves to the device on which the code is currently running (127.0.0.1). On a mobile phone, `localhost` refers to the phone itself rather than your development machine.
+- To connect a mobile phone directly to your development server on the same network, use your computer's local Wi-Fi IP address (e.g. `http://192.168.1.x:3000`).
+- If the mobile phone is on a separate cellular connection, dispatch notifications directly from your host machine to the phone's FCM device token via Google's servers.
+
+### Why did a notification not appear in the system status bar?
+- Ensure the token used does not begin with `fcm_test_` (which triggers simulation mode).
+- Ensure notification permissions are granted in Android Settings for the application.
+- On Android, background notifications are rendered by Google Play Services in the system drawer automatically. In the foreground, `@capacitor/push-notifications` delivers the message to the app runtime, where the notification channel `fcm_default_channel` triggers heads-up presentation.
+
+---
+
+## 📂 Project Structure
 
 ```
 fcm-webview-app/
-├── package.json                          # Express, Capacitor, Firebase Admin dependencies
-├── capacitor.config.json                 # Capacitor config (server.url, PushNotifications)
-├── server.js                             # Express server, FCM v1 dispatcher, SSE events
-├── send-notification-cli.js              # Standalone CLI notification sender
-├── firebase-service-account.json         # (Downloaded from Firebase Console)
+├── package.json                   # Project dependencies and operational scripts
+├── capacitor.config.json          # Capacitor runtime configuration
+├── server.js                      # Express application, FCM v1 dispatcher, SSE server
+├── send-notification-cli.js       # Standalone CLI notification dispatch utility
+├── firebase-service-account.json  # Firebase Admin credentials (local only)
 ├── android/
 │   ├── app/
-│   │   ├── google-services.json          # Official Google config (pushhub-fcm-8586)
-│   │   ├── build.gradle                  # Applies com.google.gms.google-services plugin
-│   │   └── src/main/AndroidManifest.xml  # POST_NOTIFICATIONS, INTERNET permissions
+│   │   ├── google-services.json   # Google Services client configuration
+│   │   ├── build.gradle           # Android application build configuration
+│   │   └── src/main/
+│   │       ├── AndroidManifest.xml # Android permissions (POST_NOTIFICATIONS, INTERNET)
+│   │       └── java/com/pushapp/fcmwebview/MainActivity.java
 └── public/
-    ├── index.html                        # Glassmorphic UI Dashboard & WhatsApp banner
-    ├── styles.css                        # Modern dark slate theme & animations
-    └── client.js                         # Capacitor push notification registration & listeners
+    ├── index.html                 # Glassmorphic web management console
+    ├── styles.css                 # Styling, dark mode variables, and animations
+    └── client.js                  # Capacitor push notification registration & event handlers
 ```
 
 ---
 
-## 💡 Key Android Push Notification Technical Notes
+## 📄 License
 
-1. **Android 13+ (API 33+) Requirement:**
-   Android 13 se notifications by default blocked hoti hain jab tak user runtime permission grant na kare. Hamari app me `AndroidManifest.xml` me `POST_NOTIFICATIONS` permission aur `client.js` me automatic `PushNotifications.requestPermissions()` pre-configured hai.
-
-2. **WhatsApp-Style Heads-Up Banner (Channel Configuration):**
-   Android Oreo (8.0+) me banner dikhane ke liye Notification Channel ka **Importance Level 5 (`IMPORTANCE_HIGH`)** hona zaroori hota hai. Hamne `client.js` aur `server.js` me `fcm_default_channel` configure kiya hai taaki screen ke top par WhatsApp jaisa alert aapse miss na ho!
+This project is licensed under the [ISC License](LICENSE).
