@@ -89,7 +89,16 @@
             </div>
             <div class="metric">
               <label>Host IP</label>
-              <span id="serverIpState" class="badge badge-neutral">localhost:3000</span>
+              <span id="serverIpState" class="badge badge-neutral">Offline / Local APK</span>
+            </div>
+          </div>
+
+          <!-- Optional Server URL Config (For Mobile App Sync) -->
+          <div class="server-config-box">
+            <label for="backendUrlInput" class="token-label">Backend Host URL (Optional):</label>
+            <div class="server-input-group">
+              <input type="text" id="backendUrlInput" class="form-control" placeholder="http://192.168.1.77:3000 or Ngrok URL">
+              <button id="btnSaveBackendUrl" class="btn-secondary btn-sm" type="button">Connect</button>
             </div>
           </div>
 

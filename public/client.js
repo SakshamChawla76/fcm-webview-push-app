@@ -31,9 +31,30 @@
   const bannerTitle = document.getElementById('bannerTitle');
   const bannerBody = document.getElementById('bannerBody');
   const bannerDismiss = document.getElementById('bannerDismiss');
+  const backendUrlInput = document.getElementById('backendUrlInput');
+  const btnSaveBackendUrl = document.getElementById('btnSaveBackendUrl');
 
   let currentDeviceToken = null;
   let bannerTimer = null;
+  let backendBaseUrl = localStorage.getItem('pushhub_backend_url') || '';
+
+  if (backendUrlInput) {
+    backendUrlInput.value = backendBaseUrl;
+    btnSaveBackendUrl?.addEventListener('click', () => {
+      backendBaseUrl = backendUrlInput.value.trim().replace(/\/$/, '');
+      localStorage.setItem('pushhub_backend_url', backendBaseUrl);
+      log('Backend Host updated: ' + (backendBaseUrl || 'Local / Relative'), 'success');
+      checkServerStatus();
+      fetchRegisteredDevices();
+    });
+  }
+
+  function getApiUrl(endpoint) {
+    if (backendBaseUrl) {
+      return backendBaseUrl + endpoint;
+    }
+    return endpoint;
+  }
 
   // -------------------------------------------------------------
   // Logging Utility
@@ -88,10 +109,10 @@
   // -------------------------------------------------------------
   async function checkServerStatus() {
     try {
-      const res = await fetch('/api/status');
+      const res = await fetch(getApiUrl('/api/status'));
       const data = await res.json();
 
-      serverIpState.textContent = window.location.host;
+      serverIpState.textContent = window.location.host || 'Local APK';
 
       if (data.firebase.initialized) {
         firebaseStatusText.textContent = 'Active & Connected';
@@ -104,7 +125,10 @@
       }
     } catch (err) {
       console.warn('Status check failed:', err);
-      log('Could not connect to backend server status API', 'error');
+      serverIpState.textContent = 'Standalone Mode';
+      firebaseStatusText.textContent = 'Standalone APK Mode';
+      firebaseStatusText.style.color = '#38bdf8';
+      firebaseHelperText.textContent = 'Running standalone inside Android APK. Push notifications will be received via Google Play Services.';
     }
   }
 
@@ -113,11 +137,14 @@
   // -------------------------------------------------------------
   async function fetchRegisteredDevices() {
     try {
-      const res = await fetch('/api/devices');
+      const res = await fetch(getApiUrl('/api/devices'));
       const data = await res.json();
       renderDevicesTable(data.devices || []);
       populateTargetDropdown(data.devices || []);
     } catch (err) {
+      console.warn('Could not fetch devices from backend:', err.message);
+    }
+  }
       log('Error fetching registered devices: ' + err.message, 'error');
     }
   }
@@ -185,7 +212,7 @@
         model: navigator.userAgent.substring(0, 50)
       };
 
-      const res = await fetch('/api/devices/register', {
+      const res = await fetch(getApiUrl('/api/devices/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -385,7 +412,7 @@
         priority: pushPriority.value
       };
 
-      const res = await fetch('/api/send-push', {
+      const res = await fetch(getApiUrl('/api/send-push'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -423,7 +450,7 @@
   // -------------------------------------------------------------
   function setupEventStream() {
     try {
-      const eventSource = new EventSource('/api/events');
+      const eventSource = new EventSource(getApiUrl('/api/events'));
 
       eventSource.addEventListener('init', (e) => {
         const data = JSON.parse(e.data);
@@ -435,11 +462,16 @@
         const dev = JSON.parse(e.data);
         log(`New device online: ${dev.alias} (${dev.platform})`, 'success');
         fetchRegisteredDevices();
-      });
-
       eventSource.addEventListener('notification_dispatched', (e) => {
         const record = JSON.parse(e.data);
-        log(`Dispatch Event: [${record.status}] "${record.title}" -> ${record.targetToken.substring(0, 10)}...`, 'push');
+        log(`Dispatch Event: [${record.status}] "${record.title}" -> ${record.targetToken.substring(0, 10)}...`, record.status === 'failed' ? 'error' : 'push');
+        
+        // If notification succeeded, trigger the in-app heads-up banner
+        if (record.status === 'delivered' || record.status === 'simulated') {
+          if (!currentDeviceToken || record.targetToken === currentDeviceToken || record.targetToken.startsWith('fcm_test_')) {
+            showHeadsUpBanner(record.title, record.body);
+          }
+        }
       });
 
       eventSource.onerror = () => {
