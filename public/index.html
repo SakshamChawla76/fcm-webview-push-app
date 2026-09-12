@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>FCM WebView Push Notification Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Foreground Heads-Up Notification Banner (WhatsApp Style) -->
+  <div id="headsUpBanner" class="heads-up-banner hidden">
+    <div class="banner-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </div>
+    <div class="banner-content">
+      <div class="banner-header">
+        <span id="bannerTitle" class="banner-title">Incoming Message</span>
+        <span class="banner-time">now</span>
+      </div>
+      <p id="bannerBody" class="banner-body">Notification text will appear here...</p>
+    </div>
+    <button id="bannerDismiss" class="banner-dismiss" aria-label="Dismiss">&times;</button>
+  </div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">PushHub <span>FCM</span></h1>
+          <p class="brand-subtitle">Capacitor WebView & Firebase Cloud Messaging</p>
+        </div>
+      </div>
+      <div class="runtime-status-wrap">
+        <div id="runtimeBadge" class="status-pill checking">
+          <span class="pulse-dot"></span>
+          <span id="runtimeText">Detecting Runtime...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <main class="main-content">
+      
+      <!-- Top Alert: Firebase Status -->
+      <div id="firebaseNotice" class="info-alert card-glass">
+        <div class="alert-icon">⚡</div>
+        <div class="alert-text">
+          <strong>Firebase Admin Status:</strong>
+          <span id="firebaseStatusText">Checking credentials...</span>
+          <p id="firebaseHelperText" class="helper-text"></p>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        
+        <!-- Left Column: Device Token & Status Card -->
+        <section class="card card-glass token-section">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-tag">MOBILE LAYER</span>
+              <h2>Device Token & Permission</h2>
+            </div>
+            <button id="btnRequestPermission" class="btn-secondary btn-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              Request Permission
+            </button>
+          </div>
+
+          <div class="permission-status-bar">
+            <div class="metric">
+              <label>Permission</label>
+              <span id="permState" class="badge">Checking...</span>
+            </div>
+            <div class="metric">
+              <label>Platform</label>
+              <span id="platformState" class="badge badge-info">Web Browser</span>
+            </div>
+            <div class="metric">
+              <label>Host IP</label>
+              <span id="serverIpState" class="badge badge-neutral">localhost:3000</span>
+            </div>
+          </div>
+
+          <div class="token-box">
+            <div class="token-box-header">
+              <span class="token-label">FCM Registration Token</span>
+              <button id="btnCopyToken" class="copy-btn" title="Copy to clipboard">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span id="copyText">Copy</span>
+              </button>
+            </div>
+            <textarea id="fcmTokenDisplay" readonly placeholder="Waiting for Capacitor PushNotifications registration event... (In browser, you can generate a test token below)"></textarea>
+          </div>
+
+          <div class="sim-actions" id="simActionsArea">
+            <button id="btnSimulateRegistration" class="btn-ghost btn-sm">
+              🧪 Generate Test Device Token
+            </button>
+          </div>
+        </section>
+
+        <!-- Right Column: Push Dispatcher Console -->
+        <section class="card card-glass dispatcher-section">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-tag card-tag-emerald">DISPATCHER</span>
+              <h2>Send Push Notification</h2>
+            </div>
+            <span class="live-pulse-badge">FCM v1 Ready</span>
+          </div>
+
+          <!-- Quick Template Chips -->
+          <div class="template-chips">
+            <span class="chip-label">Quick Presets:</span>
+            <button class="chip" data-title="💬 Aakash Bhaiya" data-body="Bhai push notification received! Heads-up banner working like WhatsApp 🚀">WhatsApp Chat</button>
+            <button class="chip" data-title="📦 Order Dispatched" data-body="Your package has been picked up and is out for delivery.">Delivery Alert</button>
+            <button class="chip" data-title="🔥 Hot Deal Alert" data-body="50% off on premium subscriptions today only!">Promo Ping</button>
+          </div>
+
+          <form id="pushForm" class="push-form">
+            <div class="form-group">
+              <label for="targetTokenSelect">Target Device Token</label>
+              <select id="targetTokenSelect" class="form-control">
+                <option value="">-- Select Registered Device or Paste Custom --</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="manualTokenGroup">
+              <label for="manualTokenInput">Or Custom Token</label>
+              <input type="text" id="manualTokenInput" class="form-control" placeholder="e.g. dK09f... (FCM token string)">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="pushTitle">Notification Title</label>
+                <input type="text" id="pushTitle" class="form-control" placeholder="e.g. 💬 Aakash Bhaiya" required value="💬 Aakash Bhaiya">
+              </div>
+              <div class="form-group flex-1">
+                <label for="pushPriority">Priority</label>
+                <select id="pushPriority" class="form-control">
+                  <option value="high" selected>High (Heads-up Banner)</option>
+                  <option value="normal">Normal</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="pushBody">Notification Body</label>
+              <textarea id="pushBody" class="form-control" rows="3" placeholder="Message content to be displayed in the Android system tray..." required>Bhai push notification received! Heads-up banner working like WhatsApp 🚀</textarea>
+            </div>
+
+            <button type="submit" id="btnSendPush" class="btn-primary btn-block">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              <span>Dispatch Push via Backend</span>
+            </button>
+          </form>
+        </section>
+
+      </div>
+
+      <!-- Bottom Grid: Registered Devices & Live Event Stream -->
+      <div class="bottom-grid">
+        <!-- Active Devices Table -->
+        <section class="card card-glass">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-tag">REGISTRY</span>
+              <h3>Active Devices (<span id="deviceCountBadge">0</span>)</h3>
+            </div>
+            <button id="btnRefreshDevices" class="btn-icon" title="Refresh devices">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="devices-table">
+              <thead>
+                <tr>
+                  <th>Device / Alias</th>
+                  <th>Platform</th>
+                  <th>Token Preview</th>
+                  <th>Registered</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="devicesTableBody">
+                <tr>
+                  <td colspan="5" class="empty-state">No devices registered yet. Open this URL in the Capacitor Android App to automatically register.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Live Notification Logs -->
+        <section class="card card-glass">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-tag card-tag-purple">LOGS</span>
+              <h3>Live Activity Feed</h3>
+            </div>
+            <button id="btnClearLogs" class="btn-ghost btn-sm">Clear Logs</button>
+          </div>
+          <div id="logsContainer" class="logs-feed">
+            <div class="log-entry system">
+              <span class="log-time">00:00:00</span>
+              <span class="log-msg">System initialized. Listening for SSE events & push notifications...</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </main>
+
+    <!-- Footer with Android Studio Quick Tips -->
+    <footer class="app-footer">
+      <div class="footer-card card-glass">
+        <h4>🚀 Android & Capacitor Quick Cheat-Sheet:</h4>
+        <div class="footer-links">
+          <span>• <strong>Emulator Host:</strong> <code>http://10.0.2.2:3000</code></span>
+          <span>• <strong>Real Device Host:</strong> <code>http://&lt;YOUR_WIFI_IP&gt;:3000</code></span>
+          <span>• <strong>Add Android:</strong> <code>npx cap add android</code></span>
+          <span>• <strong>Run Android:</strong> <code>npx cap run android</code></span>
+          <span>• <strong>FCM File:</strong> Place <code>google-services.json</code> inside <code>android/app/</code></span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Capacitor Scripts (Loaded dynamically or locally if bundled) -->
+  <script src="client.js"></script>
+</body>
+</html>

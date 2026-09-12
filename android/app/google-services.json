@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "524560368513",
+    "project_id": "pushhub-fcm-8586",
+    "storage_bucket": "pushhub-fcm-8586.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524560368513:android:5758176858561ad89cde80",
+        "android_client_info": {
+          "package_name": "com.pushapp.fcmwebview"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoGsq5Lqh82PvW60ntjB2HQihhzydi3vk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
